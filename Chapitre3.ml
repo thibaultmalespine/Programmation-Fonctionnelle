@@ -17,3 +17,25 @@ let arrondi = function x ->
   (* Question 6 *)
 let francs_en_euros = function x ->
   arrondi(x /. 6.55957);;
+
+
+
+(* Exercice 3 *)
+  (* Question 1 *)
+let heures = function x -> 
+  int_of_float(x);;
+
+let minutes = function x ->
+  let decimales = x -. float_of_int(heures(x)) 
+    in plus_proche_entier(decimales *. 100.) ;;
+
+  (* Question 2 *)
+let quelle_heure_est_il = function x -> 
+  let debut = "Il est " and heures = string_of_int(heures(x)) and minutes = string_of_int(minutes(x))
+    in
+  let milieu = if heures = "12" then "midi " else if heures = "0" then "minuit " else heures ^ " heure "
+    in
+  let fin = if minutes = "0" then "pile." else minutes
+    in
+  debut ^ milieu ^ fin;;
+
