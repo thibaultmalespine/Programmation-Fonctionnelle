@@ -39,3 +39,7 @@ let quelle_heure_est_il = function x ->
     in
   debut ^ milieu ^ fin;;
 
+(**)
+  let x = 2;;
+  let add = function y -> x+y;;
+  let x = 4;; 
