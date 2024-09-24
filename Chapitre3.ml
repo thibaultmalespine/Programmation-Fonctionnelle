@@ -39,3 +39,49 @@ let quelle_heure_est_il = function x ->
     in
   debut ^ milieu ^ fin;;
 
+
+(* Exercice 4 *)
+let min = function (x,y) ->
+  if x < y then x else y;;
+
+let norme = function (x,y,z) -> 
+  let carree = function x -> x*x 
+    in
+  carree(x) + carree(y) + carree(z);;
+
+
+(* Exercice 5 *)
+let reel = function (x,y,r) ->
+  let max = function (x,y) -> if x>y then x else y
+    in 
+  float_of_int(max(x,y)) +. abs_float(r) -. abs_float(float_of_int(int_of_float(r)));; 
+  
+(* Exercice 6 *)
+let chiffre = function (n) -> n mod 10;;
+
+let echange = function(n,p) -> 
+  let n2 = ((n) - (n mod 10)) 
+    in 
+  let p2 = if n2 >= 0 then (p mod 10) else - (p mod 10)
+    in
+  n2 + p2 ;;
+
+
+(* Exercice 7 *)
+
+let abcEgaux = function(a,b,c) -> (a = b) && (b = c);;
+let abEgaux = function(a,b,c) -> (a = b) && (a != c);;
+let b_entre_a_et_c = function(a,b,c) -> (a < b) && (b < c);;
+let deux_valeurs_au_moins_identiques = function(a,b,c) -> (a = b) || (b = c) || (a = c);;
+let deux_valeurs_strictement_identiques = function(a,b,c) -> (a = b) && (a != c) || (b = c) && (b != a) || (a = c) && (a != b);;
+let deux_valeurs_au_plus_identiques = function(a,b,c) -> (a != b) || (b != c) || (a != c);;
+
+
+(* Exercice 8 *)
+
+let nbDeSolutions = function(a,b,c) -> 
+  let calculDelta = function(a,b,c) -> b*b - 4*a*c
+    in
+  if calculDelta(a,b,c) > 0 then 2
+  else if calculDelta(a,b,c) = 0 then 1
+  else 0;;
