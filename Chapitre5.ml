@@ -57,24 +57,23 @@ let rec som_chif = function n ->
 
 (* Exercice 6 *)
   (* 1- *)
-let majuscule = function c -> c < 'a' && c > '9';;
+let majuscule = function c -> c >= 'a' && c <= 'z';;
 
-let minuscule = function c -> c > 'Z';;
+let minuscule = function c -> c >= 'A' && c <= 'Z';;
 
-let lettre = function c -> c < 'A';;
+let lettre = function c -> majuscule(c) || minuscule(c);;
 
   (* 2- *)
 
 let rec appartient = function 
   c, "" -> false |
-  c, s -> if (c = tetec(s)) then true 
-          else appartient(c, reste(s));; 
+  c, s -> (c = tetec(s)) || appartient(c, reste(s));; 
 
 (* type : char * string -> bool *)
 
 (* test *)
-appartient('a', "savoir") (* true *)
-appartient('n', "oui") (* false *)
+appartient('a', "savoir");; (* true *)
+appartient('n', "oui");; (* false *)
 
   (* 3- *)
 
