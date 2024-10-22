@@ -363,7 +363,15 @@ ensemble([3;3;3]);; (* [3] *)
 (* 8- *)
 
 let rec ajouter = function
-  a, liste::listes -> [a::liste]::ajouter(a, listes) | (* pb avec la signature de cette fonction *)
+  a, liste::listes -> let new_liste = a::liste in new_liste::ajouter(a, listes) | 
   a, [] -> [] ;;
 
 ajouter(1,[[];[2];[3];[2;3]]);;
+
+let rec parties = function
+  a::b::[] -> [[];[a];[b];[a;b]] |
+  a::ensemble -> parties(ensemble)@ajouter(a, parties(ensemble)) |
+  _ -> failwith("Veuillez passer en paramètre un ensemble d'au moins 2 éléments");; 
+
+parties([1;2;3]);; (* [[];[2];[3];[2;3];[1];[1;2];[1;3];[1;2;3]] *)
+parties([1;2;3;4]);; 
