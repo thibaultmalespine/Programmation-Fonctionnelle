@@ -278,6 +278,92 @@ let eratos = function n -> let liste = generer(n) in
 (* 4- *)
 let rec jumeaux = function 
   [] -> failwith("la liste ne doit pas être vide") |
-  a::b[] -> if b-a = 2 then (a,b)::[] else [] |
+  a::[] -> failwith("la doit être de taille 2 au minimum") |
+  a::b::[] -> if b-a = 2 then (a,b)::[] else [] |
   a::b::liste -> if b-a = 2 then (a,b)::jumeaux(b::liste) 
                  else jumeaux(b::liste);;
+  
+  jumeaux([2;3;5;7;11]);; (* [(3,5),(5,7)] *)
+
+(* 5- *)
+let listeJumeaux = function n -> jumeaux(eratos(n));;
+
+listeJumeaux(100);;
+
+
+(* EXERCICE 8 *)
+(* 1- *)
+let rec appartient = function 
+x, [] -> false |
+x, a::liste -> a = x || appartient(x, liste) ;;
+
+appartient(1,[1;2;3]);;
+appartient(3,[1;2;3]);;
+appartient(4,[1;2;3]);;
+
+(* 2- *)
+let rec union = function 
+  [], ensemble2 -> ensemble2 |
+  a::ensemble1, ensemble2 -> if appartient(a, ensemble2) 
+                            then union(ensemble1, ensemble2)
+                            else a::union(ensemble1, ensemble2);;
+
+union([1;2;3;4],[5;6;7;8]);; (*[1;2;3;4;5;6;7;8]*)
+union([1;2;5;4],[5;6;2;8]);; (*[1;4;5;6;2;8]*)
+
+let rec intersection = function 
+  [], ensemble2 -> [] |
+  a::ensemble1, ensemble2 -> if (appartient(a, ensemble2)) && (not (appartient(a, ensemble1)))
+                            then a::intersection(ensemble1, ensemble2)  
+                            else intersection(ensemble1, ensemble2);; 
+
+  intersection([1;2;3;4],[5;6;7;8]);; (*[]*)
+  intersection([5;6;4],[5;6;7;8]);; (*[5;6]*)
+  intersection([5;6;4;5;8],[5;6;7;8]);; (*[5;6;8]*)
+
+(* 3- *)
+let rec inclus = function 
+  [], ensemble2 -> true |  
+  a::ensemble1, ensemble2 -> appartient(a, ensemble2) && inclus(ensemble1, ensemble2);;
+
+  inclus([1;3;2;4], [1;2;3;4;5;6;7;8]);; (*true*)
+  inclus([1;2;3;4], [1;2;3;5;6;7;8]);; (*false*)
+
+(* 4- *)
+let disjoint = function ensemble1, ensemble2 -> intersection(ensemble1, ensemble2) = [];; 
+   
+disjoint([1;2;3;4],[6;7;8;9]);; (* true *)
+disjoint([1;2;3;4],[6;7;8;1]);; (* false *)
+
+(* 5- *)
+let egaux = function ensemble1, ensemble2 -> inclus(ensemble1, ensemble2) && inclus(ensemble2, ensemble1);;
+
+egaux([1;2;3;4],[4;2;3;1]);; (* true *)
+egaux([1;2;3;4],[4;2;3;1;5]);; (* false *)
+egaux([2;5;8],[7;5;8]);; (* false *)
+
+(* 6- *)
+let rec complement = function 
+  ensemble1, a::ensemble2 -> if not (appartient(a, ensemble1)) then a::complement(ensemble1, ensemble2) else complement(ensemble1, ensemble2) |
+  ensemble1, [] -> [] ;;
+
+  complement([1;2;5;8], [1;2;3;4;5;6;7;8]);; (*[3;4;6;7]*)
+  complement([1;2;5;8], [3;4;6;7]);; (*[3;4;6;7]*)
+  complement([1;2;5;8], [1;4;5;7]);; (*[4;7]*)
+
+(* 7- *)
+let rec ensemble = function
+   a::liste -> if appartient(a, liste) then ensemble(liste) else a::ensemble(liste) |
+   [] -> [];;                          
+
+ensemble([1;1;2;5;4;8;6;5]);; (* [1;2;4;8;6;5] *)
+ensemble([1;2;4;8;6;5]);; (* [1;2;4;8;6;5] *)
+ensemble([3;3;3]);; (* [3] *)
+
+(* 8- *)
+
+let rec ajouter = function
+  a, liste::listes -> [a::liste]::ajouter(a, listes) | (* pb avec la signature de cette fonction *)
+  a, [] -> [] ;;
+
+ajouter(1,[[];[2];[3];[2;3]]);;
