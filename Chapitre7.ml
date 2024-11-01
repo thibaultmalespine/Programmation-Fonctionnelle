@@ -81,3 +81,55 @@ let rec tri_fusion = function
 
 tri_fusion([5;7;8;2;9]);; (* [2;5;7;8;9] *)
 tri_fusion([1;7;8;2;-5]);; (* [-5;1;2;7;8] *)
+
+
+(* Exercice 4 *)
+  (* 1- *)
+let rec parcours = function 
+  a::b::liste, inversion -> if b < a then 
+    let t1, t2 = parcours(a::liste, inversion) in b::t1, true
+  else 
+    let t1, t2 = parcours(b::liste, inversion) in a::t1, t2 || false |
+  a::[], inversion -> a::[], inversion |
+  [], inversion -> failwith("la liste ne doit pas être vide !") ;;
+
+  parcours([1;2;3;4;5;6;7], false);; (* [1;2;3;4;5;6;7], false *)
+  parcours([7;2;3;4;5;6;1], false);; (* [2;3;4;5;6;1;7], true *)
+  parcours([2;3;4;5;6;1;7], false);; (* [2;3;4;5;1;6;7], true *)
+ 
+  (* 2- *)
+let rec bulle_aux = function liste -> let t1, t2 = parcours(liste, false) in 
+  if t2 
+  then bulle_aux(t1) 
+  else t1;;
+
+  bulle_aux([7;2;3;4;5;6;1]);; (* [1;2;3;4;5;6;7] *)
+
+  (* 3- *)
+let tri_bulle = function liste -> bulle_aux(liste);;
+
+  tri_bulle([7;2;3;4;5;6;1]);; (* [1;2;3;4;5;6;7] *)
+
+
+(* Exercice 5 *)
+  (* 1- *)
+let rec partition = function
+  a::liste, pivot -> if a > pivot 
+    then let l1, l2 = partition(liste, pivot) in l1, a::l2
+    else let l1, l2 = partition(liste, pivot) in a::l1, l2 |
+  [], pivot -> [], [];; 
+
+  partition([1;2;3;4;5;6], 2);; (* [1;2], [3;4;5;6] *)
+  partition([1;3;5;7], 8);; (* [1;3;5;7], [] *)
+  partition([5;7;3], 1);; (* [], [5;7;3] *)
+
+  (* 2- *)
+let rec quick = function 
+  a::b::liste -> let l1, l2 = partition(b::liste, a) in quick(l1) @ a::quick(l2) |
+  a::[] -> a::[] |
+  [] -> [];;
+
+  quick([2;1;5;3;6;4;4]);; (* [1;2;3;4;4;5;6] *)
+
+
+(* Exercice 6 *)
