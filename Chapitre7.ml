@@ -42,12 +42,13 @@ insertion(11, [2;4;8;10]);; (* [2;4;8;10;11] *)
 
   (* 2- *)
 let rec tri_insere = function 
-  a::b::liste -> insertion(a, tri_insere(b::liste)) |
-  a::[] -> a::[] |
-  [] -> failwith("la liste ne doit pas être vide !");;
+  a::liste -> insertion(a, tri_insere(liste)) |
+  [] -> [];;
 
-tri_insere([5;7;8;2;9]);; (* [2;5;7;8;9] *)
-tri_insere([1;7;8;2;-5]);; (* [-5;1;2;7;8] *)
+tri_insere([5;7;8;2;9]);; 
+(* [2;5;7;8;9] *)
+tri_insere([1;7;8;2;-5]);; 
+(* [-5;1;2;7;8] *)
     
 
 (* Exercice 3 *)
@@ -133,3 +134,116 @@ let rec quick = function
 
 
 (* Exercice 6 *)
+
+let annuaire = [("Claude", 1785) ; ("Andrée", 6949) ;("Antoine", 1386) ;
+("Françoise", 2638) ; ("Pascal",1009) ; ("Jean",2066) ; ("Ginette", 5250) ;
+("Julien", 8043) ;("Pierre",4773) ; ("Paul",3367) ; ("Cécile",5843)] ;;
+
+(* Recherche dans une liste quelconque *)
+(* 1- *)
+let rec cherche = function
+  nom_cherche, element::liste -> let nom, numero = element in  
+    if nom = nom_cherche then element else cherche(nom_cherche, liste) |
+  nom_cherche, [] -> failwith("Cette personne n'est pas dans l'annuaire");;
+(* TEST *)
+cherche("Pierre", annuaire);; 
+(* - : string * int = "Pierre", 4773 *)
+cherche("Brice", annuaire) ;;
+(* Exception : (Failure "Cette personne n'est pas dans l'annuaire") *)
+
+(* 2- *)
+let rec supprime = function
+  nom_a_supprimer, element::liste -> let nom, numero = element in
+    if nom_a_supprimer = nom then liste
+    else element::supprime(nom_a_supprimer, liste) |
+  nom_a_supprimer, [] -> [];;
+
+supprime("Cécile", annuaire);;
+
+(* Tri d’une liste de couples *)
+(* 1- *)
+let rec insere = function
+  element_a_inserer, element::liste -> let nom, numero = element in let nom_a_inserer, numero_a_inserer = element_a_inserer in
+    if nom_a_inserer < nom then element_a_inserer::element::liste
+    else element::insere(element_a_inserer, liste) |
+  element_a_inserer, [] -> element_a_inserer::[];;
+
+  insere(("Thibault", 5844), annuaire);;
+
+(* 2- *)
+let rec tri_insertion = function
+  element::liste -> insere(element, tri_insert(liste)) |
+  [] -> [];; 
+
+(* TEST *)
+tri_insertion (annuaire) ;;
+(* - : (string * int) list = ["Andrée", 6949 ; "Antoine", 1386 ;
+"Claude",1785 ; "Cécile", 5843 ; "Françoise",2638 ; "Ginette", 5250 ;
+"Jean", 2066 ; "Julien", 8043 ; "Pascal", 1009 ; "Paul", 3367 ;
+"Pierre", 4773] *)
+
+
+(* Utilisation de tables de hachage *)
+(* 1- *)
+let rec long = function
+"" -> 0 |
+mot -> 1+long(reste(mot)) ;;
+
+long("bonjour");; (*-: int = 7 *)
+
+(* 2- *)
+let cle = function mot -> long(mot) mod 4;;
+
+cle("bonjour");; (*-: int = 3 *)
+
+(* 3- *)
+let rec ajoutn = function
+  0, element , liste::table_de_hachage -> let nouvelle_liste = element::liste in nouvelle_liste::table_de_hachage |
+  cle, element, liste::table_de_hachage -> liste::ajoutn(cle - 1, element , table_de_hachage) |
+  cle, element, [] -> [element]::[];;
+  
+ajoutn(cle("bonjour"), "bonjour", [["aaaa";"bbbb"]; ["salut"]]);; (* [["aaaa","bbbb"], ["salut"], ["bonjour"]] *)
+
+(* 4- *)
+let ajoute = function element, table_de_hachage -> let nom, numero = element in ajoutn(cle(nom), element, table_de_hachage);;
+
+let init=[[] ;[] ;[] ;[]] ;;
+ajoute(("Pierre",6547),init) ;;
+(*- : (string * int) list list = [[] ; [] ; ["Pierre", 6547] ; []]*)
+
+(* 5- *)
+let rec hachage = function
+  element::liste -> ajoute(element, hachage(liste)) |
+  [] -> [[];[];[];[]];;
+
+let table=hachage(annuaire) ;;
+(* - : (string * int) list list = 
+  [["Jean", 2066 ; "Paul", 3367] ;
+  ["Françoise", 2638] ; 
+  ["Claude", 1785 ; "Andrée", 6949 ; "Pascal", 1009 ; "Julien", 8043 ; "Pierre", 4773 ; "Cécile", 5843] ;
+  ["Antoine", 1386 ; "Ginette", 5250]] *)
+
+  (* 6- *)
+let rec estPresent = function 
+  nom_a_chercher, element::liste -> let nom, numero = element in 
+    nom = nom_a_chercher || estPresent(nom_a_chercher, liste) |
+  nom_a_chercher, [] -> false ;;
+
+let rec rechercheListe = function
+  0, nom_a_chercher, liste::table_de_hachage -> liste |
+  cle, nom_a_chercher, liste::table_de_hachage -> rechercheListe(cle - 1, nom_a_chercher, table_de_hachage) |
+  cle, nom_a_chercher, [] -> failwith("une erreur est survenue");;
+ 
+let rechercheTable = function nom_a_chercher, table_de_hachage -> estPresent(nom_a_chercher, rechercheListe(cle(nom_a_chercher), nom_a_chercher, table_de_hachage));;
+
+rechercheTable("Andrée", table);; (* true *)
+rechercheTable("Thibault", table);; (* false *)
+
+(* 7- *)
+let rec trouverNumero = function 
+  nom_a_chercher, element::liste -> let nom, numero = element in 
+    if nom = nom_a_chercher then numero
+    else trouverNumero(nom_a_chercher, liste) |
+  nom_a_chercher, [] -> failwith("une erreur est survenue") ;;
+
+let rechercheValeur = function nom_a_chercher, table_de_hachage -> trouverNumero(nom_a_chercher, table_de_hachage)
