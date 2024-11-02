@@ -240,10 +240,12 @@ rechercheTable("Andrée", table);; (* true *)
 rechercheTable("Thibault", table);; (* false *)
 
 (* 7- *)
-let rec trouverNumero = function 
+let rec trouverValeur = function 
   nom_a_chercher, element::liste -> let nom, numero = element in 
     if nom = nom_a_chercher then numero
-    else trouverNumero(nom_a_chercher, liste) |
+    else trouverValeur(nom_a_chercher, liste) |
   nom_a_chercher, [] -> failwith("une erreur est survenue") ;;
 
-let rechercheValeur = function nom_a_chercher, table_de_hachage -> trouverNumero(nom_a_chercher, table_de_hachage)
+let rechercheValeur = function nom_a_chercher, table_de_hachage -> trouverValeur(nom_a_chercher, rechercheListe(cle(nom_a_chercher), nom_a_chercher, table_de_hachage));;
+
+rechercheValeur("Ginette", table);; (* 5250 *)
