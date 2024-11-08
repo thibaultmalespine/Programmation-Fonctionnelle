@@ -152,3 +152,24 @@ let rec evalue = function
     Oper _ , Nb n -> calcul(c, evalue(e1), n) |
     Nb n , Oper _ -> calcul(c, n, evalue(e2)) |
     Nb n1 , Nb n2 -> calcul(c, n1, n2);;
+
+evalue(exp);;
+
+
+(* Exercice 7 *)
+
+type objet = Chat | Clown | Mouton ;;
+
+type mobile = Feuille of objet | Noeud of (int*int*mobile*mobile) ;;
+
+let poids_f = function
+Chat -> 1
+| Clown -> 3
+| Mouton -> 2 ;;
+
+(* 1- *)
+let fait_mob_simple = function 
+  n, Feuille f -> Noeud(n, n, Feuille f, Feuille f) |
+  n, Noeud _ -> failwith("erreur");;
+
+  fait_mob_simple(2,Feuille Chat);;
