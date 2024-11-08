@@ -66,3 +66,89 @@ produit(N 5, R 4.4);;
 type nombreRC = R of float | C of float * float;;
 
   (* 3- *)
+
+
+(* Exercice 4 *)
+type exprLogique = Vrai | Faux | Non of exprLogique 
+| Et of exprLogique*exprLogique
+| Ou of exprLogique*exprLogique ;;
+
+  (* 1- *)
+let exp = Et ((Et(Vrai, Vrai),(Ou((Non(Ou((Faux, Non(Vrai)))))),Vrai)));;
+
+  (* 2- *)
+let rec echange = function 
+  Vrai -> Faux |
+  Faux -> Vrai |
+  Non e -> Non (echange(e)) |
+  Et (e1, e2) -> Et (echange(e1), echange(e2)) |
+  Ou (e1, e2) -> Ou (echange(e1), echange(e2));;
+
+  (* 3- *)
+let rec evalue = function
+  Vrai -> true |
+  Faux -> false |
+  Non e -> evalue(echange(e)) |
+  Et (e1, e2) -> evalue(e1) && evalue(e2) |
+  Ou (e1, e2) -> evalue(e1) || evalue(e2);;
+
+  evalue(exp);;
+
+
+(* Exercice 5 *)
+type arbre = Feuille of int | Noeud of int*arbre*arbre ;;
+
+let t= Noeud (4, Noeud (2, Noeud (3, Feuille 0, Feuille 1), Feuille 2),
+Noeud (1, Feuille 2, Noeud (3, Feuille 1, Feuille 2))) ;;
+
+  (* 1- *)
+let rec profondeur = function 
+  Noeud (n, succ1, succ2) -> let max = function a,b -> if a > b then a else b in 
+  1 + max(profondeur(succ1), profondeur(succ2)) |
+  Feuille n -> 0;;
+  
+profondeur(t);;
+
+  (* 2- *)
+let rec complet = function 
+  n, 0 -> Feuille n |
+  n, p -> Noeud(n, complet(n, p-1), complet(n, p-1));;
+
+complet(7,2);;
+
+  (* 3- *)
+let rec liste = function 
+  Noeud (n, succ1, succ2) -> n::liste(succ1)@liste(succ2) |
+  Feuille n -> n::[];;
+
+  liste(t);;
+
+
+(* Exercice 6 *)
+
+type expArithm = Nb of int | Oper of char*expArithm *expArithm ;;
+(* 1- *)
+let exp = Oper('+', Oper('*',Oper('+',Nb 0,Nb 1),Nb 2), Oper('/',Nb 2,Oper('-',Nb 1,Nb 2)));;
+(* 2- *)
+let rec nbOper = function 
+  Oper (c,e1,e2) -> 1 + nbOper(e1) + nbOper(e2) |
+  Nb n -> 0;;
+
+nbOper(exp);;
+
+(* 3- *)
+let calcul = function (c, e1, e2) -> match c with
+  '+' -> e1 + e2 |
+  '-' -> e1 - e2 |
+  '*' -> e1 * e2 |
+  '/' -> e1 / e2 ;; 
+
+  calcul('+',5,3);;
+
+let rec evalue = function  
+  Nb n -> n |
+  Oper(c, e1, e2) -> match e1, e2 with
+    Oper _ , Oper _ -> calcul(c, evalue(e1), evalue(e2)) |
+    Oper _ , Nb n -> calcul(c, evalue(e1), n) |
+    Nb n , Oper _ -> calcul(c, n, evalue(e2)) |
+    Nb n1 , Nb n2 -> calcul(c, n1, n2);;
