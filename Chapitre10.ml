@@ -61,6 +61,102 @@ filter(predicat)([1;2;3;4]);; "[]"
 filter(predicat)([1;20;3;14]);; "[20;14]"
 
  (* 5- *)
-let diffEns = function ens1 -> function ens2 -> filter(function e -> not (ilexiste(function a -> e=a)(ens2)))(ens1);;
+let diffEns = function ens1 -> function ens2 -> 
+  filter(function e -> not (ilexiste(function a -> e=a)(ens2)))(ens1);;
 
 "à tester"
+diffEns([1;2;3;4;5])([2;3;5]);;
+- int list = [1;4]
+
+diffEns([1;2;5])([2;3;5]);;
+- int list = [1]
+
+
+(* Exercice 3 *)
+(* PARTIE 1 *)
+(* 1- *)
+type expression = Const of int 
+| Var of char
+| Add of expression*expression
+| Mult of expression*expression
+| Puiss of expression*int ;;
+
+let e1 = Add (Const 1, Mult(Const 2, Puiss(Var 'x',3)));; 
+
+
+type liaison = {id : char ; valeur : int} ;;
+
+let envC = [{id = 'a' ;valeur = 3} ;{id = 'b' ;valeur = 4}] ;;
+
+(* 2- *)
+let rec evalVar = function 
+    c, liaison::env -> if liaison.id = c then liaison.valeur else evalVar(c,env) |
+    c, [] -> failwith("identificateur inconnu");;
+
+evalVar ('a',envC) ;;
+- : int = 3
+evalVar ('b',envC) ;;
+- : int = 4
+evalVar ('x',envC) ;;
+Exception " identificateur inconnu"
+
+(* 3- *)
+
+let rec puissance = function n, puiss -> 
+  if puiss > 0 then n * puissance(n, puiss-1)   
+  else if puiss = 0 then 1 else failwith("la puissance doit être positive ou nulle");;
+
+puissance(2,3);;
+- : int = 8
+
+puissance(10,0);;
+- : int = 1
+
+puissance(8,-1);;
+Exception "la puissance doit être positive ou nulle"
+
+
+(* 4- *)
+
+let evalExp = function env -> function 
+  expr -> let rec evalE = ( function
+    Const valeur -> valeur |
+    Var var -> evalVar(var, env) |
+    Add (expr1, expr2) -> evalE(expr1) + evalE(expr2) |
+    Mult (expr1, expr2) -> evalE(expr1) * evalE(expr2) |
+    Puiss (expr, puiss) -> puissance(evalE(expr), puiss)
+  ) in evalE(expr)
+;;
+(* PARTIE 2 *)
+evalExp(envC)(e1);;
+(* 1- *)
+
+type definition = {ident :char ; exp : expression } ;;
+
+let ajoute = function envC -> function def -> (
+  let valeur = evalExp(envC)(def.exp) 
+    in {id = def.ident ; valeur = valeur }::envC 
+);;
+
+ajoute envC {ident='x' ;exp = Add(Var 'a',Const 3)} ;;
+- : liaison list = [{id = 'x' ; valeur = 6} ; {id = 'a' ; valeur = 3} ; {id = 'b' ; valeur = 4}]
+
+
+(* PARTIE 3 *)
+
+type programme =
+Elementaire of expression
+| DefGlob of definition
+| DefLocale of definition*programme ;;
+
+
+let p = DefLocale ({ident = 'x' ; exp = Const 7},
+  DefLocale ({ident = 'y' ; exp = Add (Var 'x', Const 3)},
+  Elementaire (Add (Var 'x', Mult (Const 3, Var 'y'))))) ;;
+
+
+let rec evalProg = function prog, env -> match prog with (
+  Elementaire expr -> evalExp(expr) |
+  DefGlob def -> evalExp(def.exp) |
+  DefLocale (def, p) ->  evalExp(def.exp) + evalProg(p)
+);;
