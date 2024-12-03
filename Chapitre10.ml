@@ -155,8 +155,84 @@ let p = DefLocale ({ident = 'x' ; exp = Const 7},
   Elementaire (Add (Var 'x', Mult (Const 3, Var 'y'))))) ;;
 
 
-let rec evalProg = function prog, env -> match prog with (
-  Elementaire expr -> evalExp(expr) |
-  DefGlob def -> evalExp(def.exp) |
-  DefLocale (def, p) ->  evalExp(def.exp) + evalProg(p)
+let rec evalProg = function prog, env -> (match prog with 
+  Elementaire expr -> evalExp(env)(expr), env |
+  DefGlob def -> evalExp(env)(def.exp), ajoute(env)(def) |
+  DefLocale (def, p) -> let res, newEnv = evalProg(p, ajoute(env)(def)) in  
+    res, env
 );;
+
+let e2 = Add (Const 1, Mult(Var 'a', Const 2));;
+evalProg( Elementaire e2,envC) ;;
+- : int * liaison list = 7, [{id = 'a' ; valeur = 3} ; {id = 'b' ; valeur = 4}]
+
+evalProg( DefGlob {ident='x' ; exp=e2 },envC) ;;
+- : int * liaison list = 7, [{id = 'x' ; valeur = 7} ; {id = 'a' ; valeur = 3} ; {id = 'b' ; valeur = 4}]
+
+evalProg ( p ,envC) ;;
+- : int * liaison list = 37, [{id = 'a' ; valeur = 3} ; {id = 'b' ; valeur = 4}]
+
+
+(* Exercice 4 *)
+
+let rec sigma = function f -> (function 
+  i when i > 0 -> f(i) + sigma(f)(i-1) |
+  i when i = 0 -> f(0) |
+  _ -> failwith("le paramètre i doit être supérieur à 0"));; 
+
+sigma(function i -> i*i)(10);;
+
+let sigma = function f -> (function i ->
+  let rec localRec = (function 
+    i when i > 0 -> f(i) + localRec(i-1) |
+    i when i = 0 -> f(0) |
+    _ -> failwith("le paramètre doit être supérieur à 0")) in localRec(i)
+);;
+sigma(function i -> i)(10);;
+
+
+(* BONUS *)
+(* Exemple *)
+exception NombreNegatif;;
+
+let rec fact = function
+0->1
+| n-> if n<0 then raise NombreNegatif
+else n*fact(n-1) ;;
+
+fact(-3) ;;
+
+(* Exercice *)
+exception NonTrouve;;
+
+let rec associe = function a -> function 
+  (_a ,_b)::liste when a = _a -> _b |
+  (_a ,_b)::liste -> associe(a)(liste) |
+  [] -> raise NonTrouve;;
+
+associe(1)([(3,2);(1,4)]);; (* 4 *)
+associe(1)([(3,2);(7,4)]);; (* NonTrouvé *)
+
+(* Capture d'exception *)
+
+(* 1- *)
+exception PasTrouve;;
+
+(* 2- *)
+let rec trouve = function a -> function 
+  (_a ,_b)::liste when a = _a -> _b |
+  (_a ,_b)::liste -> trouve(a)(liste) |
+  [] -> raise PasTrouve;;
+
+let dico= [("a","un") ; ("called","appelé") ;
+  ("cat","chat") ; ("hand","main") ;
+  ("is","est") ; ("language","langage") ;
+  ("my","mon") ; ("us","nous") ;
+  ("wonderful","magnifique")] ;;
+  
+
+trouve("cat")(dico);;
+trouve "dog" dico ;;
+
+(* 3- *)
+let traduire = function mot -> try trouve(mot) with PasTrouve -> mot;;
