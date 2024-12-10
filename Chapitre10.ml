@@ -235,7 +235,7 @@ trouve("cat")(dico);;
 trouve "dog" dico ;;
 
 (* 3- *)
-let traduire = function mot -> try trouve(mot) (dico) with PasTrouve -> mot;;
+let traduire = function mot -> try trouve(mot) (dico) with PasTrouve -> mot;;   
 
 traduire "cat";;
 traduire "dog";;
