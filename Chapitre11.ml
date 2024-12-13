@@ -368,8 +368,37 @@ nombreArcs g1 ;;
 
 
 (* 6- *)
-let rec initGrapheRec = function 
-| 1 -> []
-| n -> initGrapheRec(n-1);;
 
-let initGraphe n = { sommets = n ; adjacences = initGrapheRec};;
+let initGraphe n = { sommets = n ; adjacences = function sommet -> if sommet <= n && sommet >= 1 then [] else raise PasUnSommet};;
+let g = initGraphe 5;;
+g.adjacences(5);;
+
+(* 7- *)
+let ajoutSommet g = {sommets = g.sommets +1; adjacences = function sommet ->
+  if sommet <= g.sommets && sommet >= 1 then g.adjacences(sommet)
+  else if sommet = g.sommets+1 then []
+  else raise PasUnSommet };;
+
+  let g1b = ajoutSommet g1 ; ;
+  (*g1b : graphe = {sommets = 6 ; adjacences = <fun>} *)
+  g1b.adjacences 1 ; ;
+  (*- : int list = [5]*)
+  g1b.adjacences 6 ; ;
+  (*- : int list = []*)
+
+
+(* 8- *)
+
+let rec ajoutListe element liste = let rec ajoutListeRec = function 
+| (e::liste, element) -> if element != e then e::ajoutListeRec(liste, element) else e::liste 
+| ([], element) -> [element]
+in ajoutListeRec(liste, element);;
+
+let listeTest = [1;2;3;4];;
+ajoutListe(3)(listeTest);; 
+(* [1;2;3;4] *)
+ajoutListe(5)(listeTest);; 
+(* [1;2;3;4;5] *)
+
+
+(* 9- *)
