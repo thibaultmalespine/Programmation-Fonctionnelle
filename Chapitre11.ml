@@ -251,3 +251,125 @@ let v4 = insere v3 (1,4) ; ;
 
 
 (* Amélioration *)
+
+type tabDyn = {taille : int; valeurs : int -> int};;
+
+let d1 = {taille = 4; valeurs = v1};;
+
+(* 1- *)
+let affecteDyn tabD (i,j) = {taille = tabD.taille; valeurs = function n when n = i -> j | _ -> tabD.valeurs(i) };; 
+
+7
+let d2 = affecteDyn d1 (1,5) ;;
+(* d2 : tabDyn = {taille = 4 ; valeurs = <fun>} *)
+
+d2.valeurs 1 ;;
+(* - : int = 5 *)
+
+
+(* 2- *)
+let supprime tabD i = { taille = tabD.taille -1 ; valeurs = function
+| n when n >= i -> tabD.valeurs(n+1)
+| n -> tabD.valeurs(n)};;
+
+let d3 = supprime d1 1;;
+d3.valeurs(1);;
+
+
+(* 3- *)
+let insereDyn tabD (i,j) = {taille = tabD.taille +1 ; valeurs = function
+| n when n > i -> tabD.valeurs(n-1)
+| n when n = i -> j
+| n -> tabD.valeurs(n)};;
+
+let d4 = insereDyn d3 (1,4) ;;
+(*d4 : tabDyn = {taille = 4 ; valeurs = <fun>}*)
+d4.valeurs(1);;
+
+(* 4- *)
+let egalite tabD1 tabD2 = let rec isEgal = function  
+| 0 -> tabD1.valeurs(0) = tabD2.valeurs(0)
+| n -> tabD1.valeurs(n) = tabD2.valeurs(n) && isEgal(n-1)
+in tabD1.taille = tabD2.taille && isEgal (tabD1.taille -1) ;;
+
+egalite d1 d4 ;;
+(*- : bool = true*)
+
+(* 5- *)
+
+let listeTest = [0;1;2;3;4;5;6;7];;
+
+let indice liste n = let rec findIndex = function
+| a::liste, 0 -> a 
+| a::liste, n -> findIndex(liste, n-1) 
+in findIndex(liste, n);;  
+
+indice listeTest 3;;
+(* - int = 3 *)
+
+
+(* 6- *)
+let rec longueur = function 
+  a::liste -> 1 + longueur(liste) |
+  [] -> 0;;
+  
+longueur listeTest;;
+(* - int = 8 *)
+
+
+(* 7- *)
+let listeVersTableau liste = { taille = longueur(liste); valeurs = function n -> indice(liste)(n) };;
+
+(* 8- *)
+let tableauVersListe tabD = let rec createList = function 
+| indice when indice < tabD.taille -1 -> tabD.valeurs(indice)::createList(indice+1)
+| indice -> [tabD.valeurs(indice)]
+in createList(0);;
+
+let listeTest = [1 ;4 ;7 ;8 ;10] ;;
+tableauVersListe (listeVersTableau µlisteTest) ;;
+(*listeTest : int list = [1 ; 4 ; 7 ; 8 ; 10]
+- : int list = [1 ; 4 ; 7 ; 8 ; 10]*)
+
+
+(* LES GRAPHES *)
+type graphe = {sommets : int ; adjacences : int -> int list} ;;
+(* 1- *)
+exception PasUnSommet;;
+
+(* 2- *)
+let g1 = { sommets = 5; adjacences = function
+| 1 -> [5]
+| 2 -> [1;4]
+| 3 -> [2]
+| 4 -> [3]
+| 5 -> [4;2]
+| _ -> raise PasUnSommet
+};;
+
+(* 3- *)
+let rec longueur = function 
+  a::liste -> 1 + longueur(liste) |
+  [] -> 0;;
+
+longueur(g1.adjacences(2));;
+
+(* 4- *)
+let nombreVoisins g sommet = longueur(g.adjacences(sommet));;
+
+(* 5- *)
+let nombreArcs g = let rec nombreArcsRec = function
+| 1 -> longueur(g.adjacences(1)) 
+| n -> longueur(g.adjacences(n)) + nombreArcsRec(n -1)
+in nombreArcsRec(g.sommets);;
+
+nombreArcs g1 ;;
+(* - : int = 7 *)
+
+
+(* 6- *)
+let rec initGrapheRec = function 
+| 1 -> []
+| n -> initGrapheRec(n-1);;
+
+let initGraphe n = { sommets = n ; adjacences = initGrapheRec};;
