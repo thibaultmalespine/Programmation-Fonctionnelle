@@ -343,7 +343,7 @@ let g1 = { sommets = 5; adjacences = function
 | 2 -> [1;4]
 | 3 -> [2]
 | 4 -> [3]
-| 5 -> [4;2]
+| 5 -> [2;4]
 | _ -> raise PasUnSommet
 };;
 
@@ -379,20 +379,21 @@ let ajoutSommet g = {sommets = g.sommets +1; adjacences = function sommet ->
   else if sommet = g.sommets+1 then []
   else raise PasUnSommet };;
 
-  let g1b = ajoutSommet g1 ; ;
+  let g1b = ajoutSommet g1 ;;
   (*g1b : graphe = {sommets = 6 ; adjacences = <fun>} *)
-  g1b.adjacences 1 ; ;
+  g1b.adjacences 1 ;;
   (*- : int list = [5]*)
-  g1b.adjacences 6 ; ;
+  g1b.adjacences 6 ;;
   (*- : int list = []*)
 
 
 (* 8- *)
 
-let rec ajoutListe element liste = let rec ajoutListeRec = function 
-| (e::liste, element) -> if element != e then e::ajoutListeRec(liste, element) else e::liste 
-| ([], element) -> [element]
-in ajoutListeRec(liste, element);;
+let rec isInListe = function
+| e::liste, element -> if element != e then isInListe(liste, element) else true
+| [], element -> false ;;
+
+let rec ajoutListe element liste = if isInListe(liste, element) then liste else element::liste;;
 
 let listeTest = [1;2;3;4];;
 ajoutListe(3)(listeTest);; 
@@ -402,3 +403,91 @@ ajoutListe(5)(listeTest);;
 
 
 (* 9- *)
+let ajoutArc g (x,y) = {sommets = g.sommets ; adjacences = function n -> if n = x then ajoutListe(y)(g.adjacences(x)) else g.adjacences(n)};;
+
+let g1c = ajoutArc g1b (6,1);;
+g1c.adjacences 6;;
+g1c.adjacences 1;;
+
+(* 10- *)
+let arcToG n listeArc = let g = initGraphe n in let rec arcToGRec = function
+| (x,y)::listeA, g -> arcToGRec(listeA, ajoutArc(g)(x,y))
+| [], g -> g 
+in arcToGRec(listeArc, g);;
+
+let listeArc = [(1,5);(2,1);(2,4);(3,2);(4,3);(5,2);(5,4)];;
+
+let g4 = arcToG 5 listeArc;;
+
+g4.adjacences(1);;
+g4.adjacences(2);;
+
+
+(* PARCOURS EN PROFONDEUR SIMPLE *)
+
+let rec appartient = function
+| e::liste, element -> if element != e then isInListe(liste, element) else true
+| [], element -> false ;;
+
+let rec auxProfond g i listeVisite = let newListeVisite = listeVisite@[i] in let rec parcoursSuccesseurs = function 
+| successeur::listeAdj, listeVisite -> if appartient(listeVisite, successeur) then parcoursSuccesseurs(listeAdj,listeVisite) else auxProfond(g)(successeur)(listeVisite)
+| [], listeVisite -> listeVisite
+in parcoursSuccesseurs(g.adjacences(i), newListeVisite);;
+
+let profond g i = let visite = [] in auxProfond(g)(i)(visite) ;;
+
+profond g1 1 ;;
+(*- : int list = [1 ; 5 ; 2 ; 4 ; 3]*)
+profond g1c 1 ;;
+(*- : int list = [1 ; 5 ; 2 ; 4 ; 3]*)
+profond g1c 6 ;;
+(*- : int list = [6 ; 1 ; 5 ; 2 ; 4 ; 3]*)
+
+
+(* Parcours en largeur - Version 1 *)
+
+let largeur g i = 
+  let rec ajout l1 f lv = 
+    match l1 with
+  | sommet::l1 -> if appartient(lv, sommet) then ajout(l1)(f)(lv) else ajout(l1)(f@[sommet])(lv)
+  | [] -> f 
+  in let rec auxLargeur lv f = 
+    match f with 
+    | sommet::f -> let newLv = if appartient(lv, sommet) then lv else lv@[sommet] in auxLargeur(newLv)(ajout(g.adjacences(sommet))(f)(newLv))
+    | [] -> lv
+  in auxLargeur([])([i]);;
+
+
+largeur g1c 1 ;;
+largeur g1c 6 ;;
+(*- : int list = [1 ; 5 ; 2 ; 4 ; 3]
+- : int list = [6 ; 1 ; 5 ; 2 ; 4 ; 3]*)
+
+
+(* Parcours en largeur - Version 2 *)
+(* 1- *)
+let rec union l1 l2 = 
+  match l1 with
+  | sommet::l1 -> if appartient(l2,sommet) then union(l1)(l2) else sommet::union(l1)(l2) 
+  | [] -> l2;;
+(* 2- *)
+let uneEtape g i = union([i])(g.adjacences(i));;
+uneEtape g1 1;;
+
+(* 3- *)
+let rec listeEtape g liste = 
+  match liste with
+  | sommet::liste -> union(uneEtape(g)(sommet))(listeEtape(g)(liste))
+  | [] -> [];;
+
+  listeEtape g1 [2 ;5] ;;
+
+(* 4- *)
+let rec largeurAux g liste = 
+  let nouvelleListe = listeEtape(g)(liste) in 
+  if longueur(nouvelleListe) = longueur(liste) then liste else largeurAux(g)(nouvelleListe);;
+
+(* 5- *)
+let largeur2 g i = largeurAux(g)([i]);;
+
+largeur2 g1 1;;
